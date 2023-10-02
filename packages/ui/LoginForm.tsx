@@ -1,0 +1,85 @@
+import React from "react";
+
+import { Typography, Box, Button, Link } from "@mui/material";
+import EmailIcon from '@mui/icons-material/Email';
+import PersonIcon from '@mui/icons-material/Person';
+import LockIcon from '@mui/icons-material/Lock';
+import GoogleIcon from '@mui/icons-material/Google';
+import FacebookIcon from '@mui/icons-material/Facebook';
+
+interface props {
+    title: string,
+    onSubmit: () => void
+};
+
+export const LoginForm: React.FC<props> = ({
+    title,
+    onSubmit
+}: props ) => {
+
+    return (
+        <div style={{background: '#333333', padding: '60px', borderRadius: '10px', width: '50vw', height: '65vh'}} >
+            <Box sx={{display: 'flex', flexDirection: 'column', marginTop: '1vh', alignItems: 'center', justifyContent: 'center'}} >
+                <Typography variant="h4">Welcome Back</Typography>
+                <Typography variant="h6">{title} to Continue</Typography>
+                <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: '3vh'}} >
+                    <EmailIcon sx={{marginTop: '2vh'}} />
+                    <input 
+                        type="text" 
+                        style={{
+                            width: '80%',
+                            padding: '10px',
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: '1px solid #fff',
+                            color: '#fff',
+                            outline: 'none',
+                            transition: 'border-bottom-color 0.3s ease'
+                        }}
+                        placeholder="Enter your email" 
+                        onFocus={(e) => {
+                            e.target.style.borderBottomColor = '#00bcd4';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderBottomColor = '#fff';
+                        }}
+                    />
+                </Box>
+                <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between"}} >
+                    <LockIcon sx={{marginTop: '2vh'}} />
+                    <input 
+                        type="text" 
+                        style={{
+                            width: '80%',
+                            padding: '10px',
+                            background: 'transparent',
+                            border: 'none',
+                            borderBottom: '1px solid #fff',
+                            color: '#fff',
+                            outline: 'none',
+                            transition: 'border-bottom-color 0.3s ease',
+                            marginTop: '1.5vh'
+                        }}
+                        placeholder="Enter your Password"
+                        onFocus={(e) => {
+                            e.target.style.borderBottomColor = '#00bcd4';
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderBottomColor = '#fff';
+                        }} 
+                    />
+                </Box>
+                <Button sx={{marginTop: '3vh'}} onClick={onSubmit} variant="contained">{title}</Button>
+                <Link href="#" sx={{marginTop: '10px'}} >Forgot Password?</Link>
+                <Link href="/signup" sx={{marginTop: '10px'}} >New? Sign Up</Link>
+                <hr style={{width: '100%', marginTop: '3vh'}} />
+                <Typography variant="h5" sx={{marginTop: '2vh'}} >Or {title} with</Typography>
+                <Box sx={{display: 'flex'}} >
+                    <GoogleIcon sx={{width: '5vw', height: '5vh', marginTop: '2vh', cursor: 'pointer'}} />
+                    <FacebookIcon sx={{width: '5vw', height: '5vh', marginTop: '2vh', cursor: 'pointer'}} />
+                </Box>
+            </Box>
+        </div>
+    )
+
+}
