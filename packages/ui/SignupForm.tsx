@@ -93,7 +93,7 @@ export const SignupForm : React.FC<props> = ({
                 <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between"}} >
                     <LockIcon sx={{marginTop: '2vh'}} />
                     <input 
-                        type="text" 
+                        type="password"
                         style={{
                             width: '80%',
                             padding: '10px',

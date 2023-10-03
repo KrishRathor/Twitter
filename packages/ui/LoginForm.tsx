@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { Typography, Box, Button, Link } from "@mui/material";
 import EmailIcon from '@mui/icons-material/Email';
@@ -7,15 +7,31 @@ import LockIcon from '@mui/icons-material/Lock';
 import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
 
+type data = {
+    email: string,
+    password: string
+}
+
 interface props {
     title: string,
-    onSubmit: () => void
+    onSubmit: (arg0: data) => void
 };
 
 export const LoginForm: React.FC<props> = ({
     title,
     onSubmit
 }: props ) => {
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = () => {
+        const data = {
+            email: email,
+            password: password
+        };
+        onSubmit(data);
+    }
 
     return (
         <div style={{background: '#333333', padding: '60px', borderRadius: '10px', width: '50vw', height: '65vh'}} >
@@ -43,12 +59,13 @@ export const LoginForm: React.FC<props> = ({
                         onBlur={(e) => {
                             e.target.style.borderBottomColor = '#fff';
                         }}
+                        onChange={e => setEmail(e.target.value)}
                     />
                 </Box>
                 <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between"}} >
                     <LockIcon sx={{marginTop: '2vh'}} />
                     <input 
-                        type="text" 
+                        type="password" 
                         style={{
                             width: '80%',
                             padding: '10px',
@@ -67,9 +84,10 @@ export const LoginForm: React.FC<props> = ({
                         onBlur={(e) => {
                             e.target.style.borderBottomColor = '#fff';
                         }} 
+                        onChange={e => setPassword(e.target.value)}
                     />
                 </Box>
-                <Button sx={{marginTop: '3vh'}} onClick={onSubmit} variant="contained">{title}</Button>
+                <Button sx={{marginTop: '3vh'}} onClick={handleLogin} variant="contained">{title}</Button>
                 <Link href="#" sx={{marginTop: '10px'}} >Forgot Password?</Link>
                 <Link href="/signup" sx={{marginTop: '10px'}} >New? Sign Up</Link>
                 <hr style={{width: '100%', marginTop: '3vh'}} />

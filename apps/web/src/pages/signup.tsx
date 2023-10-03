@@ -1,12 +1,21 @@
 "use client"
 import { trpc } from "@/utils/trpc";
+import { toast } from "react-toastify";
 import { SignupForm } from "ui";
+import { useRouter } from "next/router";
 
 const Signup = () => {
 
+    const router = useRouter();
+
     const userSignup = trpc.user.signup.useMutation({
         onSuccess: data => {
-            console.log(data);
+            if (data.code === 201) {
+                toast("User created Successfully!");
+            } else if (data.code === 403) {
+                toast("Email already registered!");
+            }
+            router.push('/login')   
         }
     });
 
