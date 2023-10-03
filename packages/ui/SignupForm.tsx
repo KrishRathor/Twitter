@@ -7,15 +7,34 @@ import LockIcon from '@mui/icons-material/Lock';
 import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
 
+type SignupData = {
+    username: string,
+    email: string,
+    password: string
+};
+
 interface props {
     title: string,
-    onSubmit: () => void
+    onSubmit: (arg0: SignupData) => void
 }
 
 export const SignupForm : React.FC<props> = ({
     title,
     onSubmit
 }: props) => {
+
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleSubmit = () => {
+        const data = {
+            email: email,
+            username: username,
+            password: password
+        };
+        onSubmit(data);
+    }
 
     return (
         <div style={{background: '#333333', padding: '60px', borderRadius: '10px', width: '50vw', height: '60vh'}} >
@@ -24,7 +43,7 @@ export const SignupForm : React.FC<props> = ({
                 <Typography variant="h6">{title} to Continue</Typography>
                 <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: '3vh'}} >
                     <EmailIcon sx={{marginTop: '2vh'}} />
-                    <input 
+                    <input
                         type="text" 
                         style={{
                             width: '80%',
@@ -43,6 +62,7 @@ export const SignupForm : React.FC<props> = ({
                         onBlur={(e) => {
                             e.target.style.borderBottomColor = '#fff';
                         }}
+                        onChange={e => setEmail(e.target.value)}
                     />
                 </Box>
                 <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between"}} >
@@ -66,7 +86,8 @@ export const SignupForm : React.FC<props> = ({
                         }}
                         onBlur={(e) => {
                             e.target.style.borderBottomColor = '#fff';
-                        }} 
+                        }}
+                        onChange={e => setUsername(e.target.value)}
                     />
                 </Box>
                 <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between"}} >
@@ -91,9 +112,10 @@ export const SignupForm : React.FC<props> = ({
                         onBlur={(e) => {
                             e.target.style.borderBottomColor = '#fff';
                         }} 
+                        onChange={e => setPassword(e.target.value)}
                     />
                 </Box>
-                <Button sx={{marginTop: '3vh'}} onClick={onSubmit} variant="contained">{title}</Button>
+                <Button sx={{marginTop: '3vh'}} onClick={handleSubmit} variant="contained">{title}</Button>
                 <Link href="/login" sx={{marginTop: '10px'}} >Already Registered? Log In</Link>
                 <hr style={{width: '100%', marginTop: '3vh'}} />
                 <Typography variant="h5" sx={{marginTop: '2vh'}} >Or {title} with</Typography>
