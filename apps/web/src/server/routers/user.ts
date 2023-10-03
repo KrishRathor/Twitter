@@ -72,6 +72,36 @@ export const userRouter = router({
                 message: "Successfull Login!",
                 token: email
             }
+        }),
+
+    me: publicProcedure
+        .input(z.object({
+            userID: z.string().nullable()
+        }))
+        .mutation(async opts => {
+            const { userID } = opts.input;
+            let user;
+            if (userID) {
+                user = await prisma.user.findFirst({
+                    where: {
+                        email: userID
+                    }
+                })
+            }
+            return {
+                code: 200,
+                user
+            }
+        }),
+
+    getAllUsers: publicProcedure
+        .query(async opts => {
+            const users = await prisma.user.findMany();
+            console.log( "server side", users);
+            return {
+                code: '100',
+                users
+            };
         })
 
 })

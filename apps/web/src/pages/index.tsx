@@ -1,3 +1,4 @@
+import { trpc } from "@/utils/trpc";
 import { Card } from "ui"; 
 
 export default function Home() {

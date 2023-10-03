@@ -15,4 +15,46 @@ model User {
     password String
     verified Boolean @default(false)
     createdAt DateTime @default(now())
+    tweets Tweet[] @relation("userTweets")
+    reTweets ReTweets[] @relation("userReTweets")
+    replies Replies[] @relation("userReplies")
+    likes Likes[] @relation("userLikes")
+}
+
+model Tweet {
+  id String @id @default(uuid())
+  content String
+  createdAt DateTime @default(now())
+  userId String
+  user User @relation("userTweets", fields: [userId], references: [id])
+  reTweets ReTweets[] @relation("reTweet")
+  replies Replies[] @relation("replies")
+  likes Likes[] @relation("likes")
+}
+
+model ReTweets {
+  id String @id @default(uuid())
+  tweetID String
+  tweet Tweet @relation("reTweet", fields: [tweetID], references: [id])
+  userId String
+  user User @relation("userReTweets", fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Replies {
+  id String @id @default(uuid())
+  tweetId String
+  tweet Tweet @relation("replies", fields: [tweetId], references: [id])
+  userId String
+  user User @relation("userReplies", fields: [userId], references: [id])
+  content String
+  createdAt DateTime @default(now())
+}
+
+model Likes {
+  id String @id @default(uuid())
+  tweetId String
+  tweet Tweet @relation("likes", fields: [tweetId], references: [id])
+  userId String
+  user User @relation("userLikes", fields: [userId], references: [id])
 }

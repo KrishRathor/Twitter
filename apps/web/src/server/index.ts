@@ -2,12 +2,14 @@ import { router } from './trpc';
 import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import jwt from "jsonwebtoken";
 import { userRouter } from './routers/user';
+import { tweetRouter } from './routers/tweet';
 import cors from "cors";
 export const SECRET = 'SECr3t';
 
 // using trpc
 export const appRouter = router({
-    user: userRouter
+    user: userRouter,
+    tweet: tweetRouter
 });
 
 
