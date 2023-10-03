@@ -1,8 +1,6 @@
 "use client"
 import { trpc } from "@/utils/trpc";
-import { useRecoilState } from "recoil";
 import { SignupForm } from "ui";
-import { signupData } from "./state/user/Signupdata";
 
 const Signup = () => {
 

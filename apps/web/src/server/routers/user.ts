@@ -14,18 +14,27 @@ export const userRouter = router({
         }))
         .mutation(async opts => {
             const {username, email, password} = opts.input;
+
+            const user = await prisma.user.findFirst({where: {
+                email: email
+            }});
+
+            if (user) {
+                return {
+                    message: 'Email already registered!'
+                }
+            }
+
             const createUser = await prisma.user.create({
                 data: {
                     email: email,
                     username: username,
                     password: password
                 }
-            })
-            console.log(createUser);
+            });
             return {
-                username,
-                email,
-                password
+                message: 'User created successfully',
+                user: createUser
             }
         })
 
