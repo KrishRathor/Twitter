@@ -35,7 +35,7 @@ export const Card: React.FC<props> = ({
             background: '#0A0A0A'
         }}>
             <div style={{marginTop: '8px', marginLeft: '10px', display: 'flex'}}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" sx={{cursor: "pointer"}} />
+                <Avatar alt={username} src="/static/images/avatar/1.jpg" sx={{cursor: "pointer"}} />
                 <div style={{
                     display: 'flex',
                     marginLeft: '30px',

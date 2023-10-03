@@ -1,7 +1,9 @@
-import { trpc } from "@/utils/trpc";
-import { Card } from "ui"; 
+import { useState } from "react";
+import { Card, CreateTweetModal } from "ui"; 
 
 export default function Home() {
+
+  const [CreateTweetModalDisplay, setCreateTweetModalDisplay] = useState(false);
 
   return (
     <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '2vh'}} >
@@ -15,6 +17,13 @@ export default function Home() {
           retweet={24}
           likes={450}
        />
+       <CreateTweetModal username="Krish" toShow={CreateTweetModalDisplay} handleClose={() => {
+        setCreateTweetModalDisplay(false);
+       }} />
+       <button onClick={() => {
+          console.log('first');
+          setCreateTweetModalDisplay(true);
+       }}>Post Tweet</button>
     </div>
   )
 }
