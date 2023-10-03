@@ -12,8 +12,6 @@ const Signup = () => {
         }
     });
 
-    const [signupInfo, setSignupInfo] = useRecoilState(signupData);
-
     return (
         <div style={{
             display: 'flex',
@@ -22,9 +20,9 @@ const Signup = () => {
             marginTop: '15vh'
         }} >
             <SignupForm title="Sign Up"  onSubmit={async (signupData) => {
-                setSignupInfo(signupData);
-                userSignup.mutate(signupInfo);
-            }} />
+                await userSignup.mutate(signupData);
+            }}
+            />
         </div>
     )
 }
