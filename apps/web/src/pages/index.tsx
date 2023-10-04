@@ -5,11 +5,14 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Card, CreateTweetModal } from "ui"; 
 
+let repliesMutation;
+
 export default function Home() {
 
   const [CreateTweetModalDisplay, setCreateTweetModalDisplay] = useState(false);
   const [user, setUser] = useState('');
   const [tweets, setTweets] = useState<any[]>([]);
+
   const userMuation = trpc.user.me.useMutation({
     onSuccess: data => {
       setUser(JSON.stringify(data.user))
@@ -28,7 +31,16 @@ export default function Home() {
             toast(data.message);
         }
     }
-}) 
+  });
+  repliesMutation = trpc.replies.getAllReplies.useMutation({
+    onSuccess: data => {
+      if (data.code === 403) {
+        toast("An internal error occured");
+      } else if (data.code === 200) {
+        console.log(data.replies);
+      } 
+    }
+  })
 
   useEffect(() => {
     tweetsQuery.mutate();
@@ -113,3 +125,5 @@ export default function Home() {
     </div>
   )
 }
+
+export { repliesMutation };

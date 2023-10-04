@@ -38,10 +38,45 @@ export const replyRouter = router({
                     content: content
                 }
             })
+            await prisma.tweet.update({
+                where: {
+                    id: tweetId,
+                },
+                data: {
+                    RepliesCount: {
+                        increment: 1
+                    }
+                }
+            })
             return {
                 code: 201,
                 message: 'Reply sent successfully',
                 postReply
+            }
+        }),
+
+    getAllReplies: publicProcedure
+        .input(z.object({
+            tweetId: z.string().nullable()
+        }))
+        .mutation(async opts => {
+            const { tweetId } = opts.input;
+            if (!tweetId) {
+                return {
+                    code: 403,
+                    message: "Tweet Id not provided",
+                    replies: ''
+                }
+            }
+            const comments = await prisma.replies.findMany({
+                where: {
+                    tweetId: tweetId
+                }
+            })
+            return {
+                code: 200,
+                message: "Replies fetched successfully",
+                replies: comments
             }
         })
 

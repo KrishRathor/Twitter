@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import { TextField, Button } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
+import { trpc } from "../../apps/web/src/utils/trpc";
+import { ReplyModal } from "./ReplyModal";
 
 interface props {
     toShow: any,
@@ -17,6 +19,26 @@ export const Replies: React.FC<props> = ({
 }: props) => {
 
     const [content, setContent] = useState('');
+    const [replies, setReplies] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const repliesMutation = trpc.replies.getAllReplies.useMutation({
+        onSuccess: data => {
+            if (data.code === 403) {
+                console.log("An internal error occured while fetching replies");
+            } else if (data.code === 200) {
+                // @ts-ignore
+                setReplies(data.replies);
+            }
+        }
+    })
+
+    useEffect(() => {
+        repliesMutation.mutate({
+            tweetId: id
+        })
+        setIsLoading(false);
+    }, [replies])
 
     return (
         <motion.div
@@ -31,6 +53,7 @@ export const Replies: React.FC<props> = ({
                 zIndex: 1,
                 overflow: 'auto',
                 position: 'fixed',
+                top: 20,
                 background: '#333333',
                 borderRadius: '10px',
                 overflowY: 'auto'
@@ -53,7 +76,13 @@ export const Replies: React.FC<props> = ({
                 borderRadius: '5px',
                 overflowY: 'auto' 
             }} >
-
+                {
+                    !isLoading ? 
+                            replies.map(item => 
+                                <ReplyModal item={item} />
+                            )
+                            : 'Loading...'
+                }
             </div>
             <div style={{
                 display: 'flex',
