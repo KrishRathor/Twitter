@@ -22,10 +22,29 @@ export const tweetRouter = router({
         }))
         .mutation(async opts => {
             const { userId, content } = opts.input;
+
+            if (!userId) {
+                return {
+                    code: 403,
+                    message: "Please login before posting"
+                }
+            }
+
+            const user = await prisma.user.findFirst({
+                where: {
+                    email: userId
+                }
+            })
+            if (!user) {
+                return {
+                    code: 403,
+                    message: "User not found"
+                }
+            }
             const createTweet = await prisma.tweet.create({
                 data: {
                     content: content,
-                    userId: userId
+                    userId: user?.id
                 }
             })
             return {

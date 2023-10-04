@@ -2,17 +2,36 @@ import React, { useState } from "react";
 import { Avatar, TextField, Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
+type data = {
+    content: string,
+    userId: string
+}
+
 interface props {
     toShow: boolean,
     username: string,
-    handleClose: () => void;
+    email: string,
+    handleClose: () => void,
+    handleSubmit: (arg0: data) => void
 };
 
 export const CreateTweetModal: React.FC<props> = ({
     toShow,
     username,
-    handleClose
+    handleClose,
+    handleSubmit,
+    email
 }: props) => {
+
+    const [content, setContent] = useState('');
+
+    const submit = () => {
+        const data = {
+            userId: email,
+            content: content
+        }
+        handleSubmit(data);
+    }
 
     return (
         <div style={{
@@ -56,6 +75,7 @@ export const CreateTweetModal: React.FC<props> = ({
                     InputProps={{
                         style: { color: 'white' }, // Change 'red' to the desired text color
                     }}
+                    onChange={e => setContent(e.target.value)}
                 />
             </div>
             <hr style={{
@@ -64,10 +84,14 @@ export const CreateTweetModal: React.FC<props> = ({
                 marginLeft: '40px'
             }} />
             <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
-                <Button variant="contained" sx={{
-                    marginTop: '20px',
-                    marginRight: '60px'
-                }} >Post</Button>
+                <Button 
+                    variant="contained" 
+                    sx={{
+                        marginTop: '20px',
+                        marginRight: '60px'
+                    }}
+                    onClick={submit}
+                >Post</Button>
             </div>
         </div>
     )

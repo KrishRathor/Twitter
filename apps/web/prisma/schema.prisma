@@ -30,6 +30,9 @@ model Tweet {
   reTweets ReTweets[] @relation("reTweet")
   replies Replies[] @relation("replies")
   likes Likes[] @relation("likes")
+  reTweetCount Int @default(0)
+  RepliesCount Int @default(0)
+  Likes Int @default(0)
 }
 
 model ReTweets {
