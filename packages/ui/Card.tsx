@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, Typography } from '@mui/material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareIcon from '@mui/icons-material/Share';
+import { motion } from "framer-motion";
+import { Replies } from "./Replies";
 
 interface props {
     avatarPic: string,
@@ -13,7 +15,9 @@ interface props {
     content: string,
     replyCount: number,
     retweet: number,
-    likes: number
+    likes: number,
+    handleCommentClick: (id: string) => void,
+    id: string
 };
 
 export const Card: React.FC<props> = ({
@@ -24,8 +28,17 @@ export const Card: React.FC<props> = ({
     content,
     replyCount,
     retweet,
-    likes
+    likes,
+    handleCommentClick,
+    id
 }: props) => {
+
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        console.log(isVisible);
+    }, [isVisible])
+
     return (
         <div style={{
             minHeight: '18vh',
@@ -59,15 +72,27 @@ export const Card: React.FC<props> = ({
                 justifyContent: 'space-evenly'
             }}>
                 <div style={{display: 'flex'}} >
-                    <ChatBubbleOutlineIcon sx={{cursor: 'pointer'}} />
+                    <div onClick={() => { 
+                        setIsVisible(!isVisible);
+                        handleCommentClick(id);
+                    }} >
+                        <ChatBubbleOutlineIcon sx={{cursor: 'pointer'}} />
+                    </div>
+                    {
+                        isVisible ? <Replies toShow={setIsVisible} /> : ''
+                    }
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {replyCount} </Typography>
                 </div>
                 <div style={{display: 'flex'}} >
-                    <DynamicFeedIcon sx={{cursor: 'pointer'}} />
+                    <div>
+                        <DynamicFeedIcon sx={{cursor: 'pointer'}} />
+                    </div>
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {retweet} </Typography>
                 </div>
                 <div style={{display: 'flex'}} >
-                    <FavoriteBorderIcon sx={{cursor: 'pointer'}} />
+                    <div>
+                        <FavoriteBorderIcon sx={{cursor: 'pointer'}} />
+                    </div>
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {likes} </Typography>
                 </div>
                 <div>

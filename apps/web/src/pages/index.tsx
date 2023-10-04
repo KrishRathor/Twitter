@@ -1,4 +1,5 @@
 "use client"
+import { handleCommentClick } from "@/helpers/handleCommentClick";
 import { trpc } from "@/utils/trpc";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -55,8 +56,12 @@ export default function Home() {
       justifyContent: 'center',
       alignItems: 'center'
     }} >
-      {
-        tweets.map((item, key) => (
+      <div style={{
+        overflowY: 'auto',
+        maxHeight: '90vh'
+      }}>
+        {
+          tweets.map((item, key) => (
             <Card
               key={key}
               avatarPic={item.avatarPic}
@@ -67,9 +72,12 @@ export default function Home() {
               replyCount={item.RepliesCount}
               retweet={item.reTweetCount}
               likes={item.Likes}
+              id={item.id}
+              handleCommentClick={handleCommentClick}
             />
         ))
-      }
+        }
+      </div>
        {
         user ? 
         <CreateTweetModal 
