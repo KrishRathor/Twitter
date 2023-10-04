@@ -1,5 +1,5 @@
 "use client"
-import { handleCommentClick } from "@/helpers/handleCommentClick";
+import { handleCommentPost } from "@/helpers/handleCommentPost";
 import { trpc } from "@/utils/trpc";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -20,6 +20,15 @@ export default function Home() {
       setTweets(data.tweets)
     }
   });
+  const createPostMutation = trpc.replies.postReply.useMutation({
+    onSuccess: data => {
+        if (data.code === 403) {
+            toast(data.message);
+        } else if (data.code === 201) {
+            toast(data.message);
+        }
+    }
+}) 
 
   useEffect(() => {
     tweetsQuery.mutate();
@@ -73,7 +82,13 @@ export default function Home() {
               retweet={item.reTweetCount}
               likes={item.Likes}
               id={item.id}
-              handleCommentClick={handleCommentClick}
+              handleCommentPost={(id, content) => {
+                createPostMutation.mutate({
+                  tweetId: id,
+                  userId: localStorage.getItem('token'),
+                  content: content
+              })
+              }}
             />
         ))
         }

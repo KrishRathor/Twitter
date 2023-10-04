@@ -1,16 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import { TextField, Button } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 
 interface props {
-    toShow: any
+    toShow: any,
+    handleCommentPost: (id: string, content: string) => void,
+    id: string,
 }
 
 export const Replies: React.FC<props> = ({
-    toShow
+    toShow,
+    handleCommentPost,
+    id
 }: props) => {
+
+    const [content, setContent] = useState('');
+
     return (
         <motion.div
             initial={{ opacity: 0, y: '-100%' }}
@@ -58,6 +65,7 @@ export const Replies: React.FC<props> = ({
                     id="standard-basic"
                     label="Reply..."
                     variant="standard"
+                    onChange={e => setContent(e.target.value)}
                     inputProps={{
                         style: {
                         color: 'white', // Text color
@@ -74,6 +82,8 @@ export const Replies: React.FC<props> = ({
                     height: '3vh',
                     marginLeft: '20px',
                     marginTop: '10px'
+                }} onClick={() => {
+                    handleCommentPost(id, content);
                 }} >Send</Button>
             </div>
         </motion.div>

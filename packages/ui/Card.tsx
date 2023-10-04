@@ -16,7 +16,7 @@ interface props {
     replyCount: number,
     retweet: number,
     likes: number,
-    handleCommentClick: (id: string) => void,
+    handleCommentPost: (id: string, content: string) => void,
     id: string
 };
 
@@ -29,15 +29,11 @@ export const Card: React.FC<props> = ({
     replyCount,
     retweet,
     likes,
-    handleCommentClick,
+    handleCommentPost,
     id
 }: props) => {
 
     const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        console.log(isVisible);
-    }, [isVisible])
 
     return (
         <div style={{
@@ -74,12 +70,17 @@ export const Card: React.FC<props> = ({
                 <div style={{display: 'flex'}} >
                     <div onClick={() => { 
                         setIsVisible(!isVisible);
-                        handleCommentClick(id);
                     }} >
                         <ChatBubbleOutlineIcon sx={{cursor: 'pointer'}} />
                     </div>
                     {
-                        isVisible ? <Replies toShow={setIsVisible} /> : ''
+                        isVisible ? 
+                            <Replies 
+                                id={id} 
+                                toShow={setIsVisible} 
+                                handleCommentPost={handleCommentPost} 
+                            /> 
+                            : ''
                     }
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {replyCount} </Typography>
                 </div>
