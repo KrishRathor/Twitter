@@ -14,16 +14,15 @@ export default function Home() {
       setUser(JSON.stringify(data.user))
     }
   });
-  const tweetsQuery = trpc.tweet.getAllTweets.useQuery();
+  const tweetsQuery = trpc.tweet.getAllTweets.useMutation({
+    onSuccess: data => {
+      setTweets(data.tweets)
+    }
+  });
 
   useEffect(() => {
-    if (!tweetsQuery.isLoading) {
-      console.log(tweetsQuery.data?.tweets);
-      if (tweetsQuery.data?.tweets) {
-        setTweets(tweetsQuery.data.tweets);
-      }
-    }
-  }, [tweetsQuery]);
+    tweetsQuery.mutate();
+  }, [tweets])
   
   useEffect(() => {
     // here we are loading user information so that we can pass it in Card modal

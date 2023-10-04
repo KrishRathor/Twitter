@@ -30,6 +30,7 @@ export const CreateTweetModal: React.FC<props> = ({
             userId: email,
             content: content
         }
+        setContent('');
         handleSubmit(data);
     }
 
@@ -65,6 +66,7 @@ export const CreateTweetModal: React.FC<props> = ({
                     id="outlined-textarea"
                     label="Enter your tweet"
                     placeholder="Tweet..."
+                    value={content}
                     multiline
                     sx = {{
                         marginTop: '30px',
@@ -90,7 +92,7 @@ export const CreateTweetModal: React.FC<props> = ({
                         marginTop: '20px',
                         marginRight: '60px'
                     }}
-                    onClick={submit}
+                    onClick={(submit)}
                 >Post</Button>
             </div>
         </div>

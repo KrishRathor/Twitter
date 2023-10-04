@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export const tweetRouter = router({
 
     getAllTweets: publicProcedure
-        .query(async opts => {
+        .mutation(async opts => {
             const tweets = await prisma.tweet.findMany();
             return {
                 code: 200,
@@ -44,7 +44,9 @@ export const tweetRouter = router({
             const createTweet = await prisma.tweet.create({
                 data: {
                     content: content,
-                    userId: user?.id
+                    userId: user?.id,
+                    email: userId,
+                    username: user.username
                 }
             })
             return {

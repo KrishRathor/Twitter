@@ -26,6 +26,8 @@ model Tweet {
   content String
   createdAt DateTime @default(now())
   userId String
+  username String
+  email String
   user User @relation("userTweets", fields: [userId], references: [id])
   reTweets ReTweets[] @relation("reTweet")
   replies Replies[] @relation("replies")
