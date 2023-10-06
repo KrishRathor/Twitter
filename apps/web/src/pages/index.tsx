@@ -70,6 +70,10 @@ export default function Home() {
     }
   });
 
+  const createToast = (content: string) => {
+    toast("Please login before continuing");
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -94,13 +98,15 @@ export default function Home() {
               retweet={item.reTweetCount}
               likes={item.Likes}
               id={item.id}
-              handleCommentPost={(id, content) => {
-                createPostMutation.mutate({
+              handleCommentPost={async (id, content) => {
+                await createPostMutation.mutate({
                   tweetId: id,
                   userId: localStorage.getItem('token'),
                   content: content
               })
               }}
+              token={localStorage.getItem('token')}
+              createToast={createToast}
             />
         ))
         }

@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { userRouter } from './routers/user';
 import { tweetRouter } from './routers/tweet';
 import { replyRouter } from './routers/reply';
+import { likeRouter } from './routers/likeRouter';
 import cors from "cors";
 export const SECRET = 'SECr3t';
 
@@ -11,7 +12,8 @@ export const SECRET = 'SECr3t';
 export const appRouter = router({
     user: userRouter,
     tweet: tweetRouter,
-    replies: replyRouter
+    replies: replyRouter,
+    likes: likeRouter
 });
 
 

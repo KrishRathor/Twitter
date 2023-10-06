@@ -4,8 +4,9 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareIcon from '@mui/icons-material/Share';
-import { motion } from "framer-motion";
 import { Replies } from "./Replies";
+import { trpc } from "../../apps/web/src/utils/trpc";
+import toast from "react-hot-toast";
 
 interface props {
     avatarPic: string,
@@ -17,7 +18,9 @@ interface props {
     retweet: number,
     likes: number,
     handleCommentPost: (id: string, content: string) => void,
-    id: string
+    id: string,
+    token: string | null,
+    createToast: (arg0: string) => void
 };
 
 export const Card: React.FC<props> = ({
@@ -30,10 +33,45 @@ export const Card: React.FC<props> = ({
     retweet,
     likes,
     handleCommentPost,
-    id
+    id,
+    token,
+    createToast
 }: props) => {
 
     const [isVisible, setIsVisible] = useState(false);
+    const [isLiked, setIsliked] = useState(false);
+
+    const checkIfLikeMutation = trpc.likes.ifLike.useMutation({
+        onSuccess: data => {
+            console.log(data);
+            setIsliked(data.status);
+        }
+    })
+    const onLikeMutation = trpc.likes.onLike.useMutation({
+        onSuccess: data => {
+            setIsliked(true);
+        }
+    })
+
+    const unLikeMutation = trpc.likes.unLike.useMutation({
+        onSuccess: data => {
+            setIsliked(false);
+        }
+    })
+
+    useEffect(() => {
+        if (!token) {
+            toast("Please login before continuing");
+            return;
+        }
+        const checkIfLike = async () => {
+            await checkIfLikeMutation.mutate({
+                tweetId: id,
+                userEmail: token
+            })
+        }
+        checkIfLike();
+    }, [isLiked])
 
     return (
         <div style={{
@@ -68,7 +106,7 @@ export const Card: React.FC<props> = ({
                 justifyContent: 'space-evenly'
             }}>
                 <div style={{display: 'flex'}} >
-                    <div onClick={() => { 
+                    <div onClick={() => {
                         setIsVisible(!isVisible);
                     }} >
                         <ChatBubbleOutlineIcon sx={{cursor: 'pointer'}} />
@@ -91,8 +129,23 @@ export const Card: React.FC<props> = ({
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {retweet} </Typography>
                 </div>
                 <div style={{display: 'flex'}} >
-                    <div>
-                        <FavoriteBorderIcon sx={{cursor: 'pointer'}} />
+                    <div onClick={() => {
+                        if (!token) {
+                            createToast("Please login before continuing");
+                            return;
+                        }
+                        !isLiked ? 
+                            onLikeMutation.mutate({
+                                tweetId: id,
+                                userEmail: token
+                            })
+                            :
+                            unLikeMutation.mutate({
+                                tweetId: id,
+                                userEmail: token
+                            })
+                    }} >
+                        <FavoriteBorderIcon sx={{cursor: 'pointer', color: isLiked ? 'red' : '' }} />
                     </div>
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {likes} </Typography>
                 </div>
