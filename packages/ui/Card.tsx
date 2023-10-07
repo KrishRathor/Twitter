@@ -20,7 +20,8 @@ interface props {
     handleCommentPost: (id: string, content: string) => void,
     id: string,
     token: string | null,
-    createToast: (arg0: string) => void
+    createToast: (arg0: string) => void,
+    changeTweetState: () => void
 };
 
 export const Card: React.FC<props> = ({
@@ -35,43 +36,45 @@ export const Card: React.FC<props> = ({
     handleCommentPost,
     id,
     token,
-    createToast
+    createToast,
+    changeTweetState
 }: props) => {
 
     const [isVisible, setIsVisible] = useState(false);
-    const [isLiked, setIsliked] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
 
-    const checkIfLikeMutation = trpc.likes.ifLike.useMutation({
+    const checkLikeMutation = trpc.likes.ifLike.useMutation({
         onSuccess: data => {
-            console.log(data);
-            setIsliked(data.status);
+            console.log('checklike', data);
+            setIsLiked(data.status);
         }
-    })
-    const onLikeMutation = trpc.likes.onLike.useMutation({
-        onSuccess: data => {
-            setIsliked(true);
+    });
+
+    const likeMutation = trpc.likes.like.useMutation({
+        onSuccess: async data => {
+            console.log('like', data);
+            setIsLiked(true);
+            await changeTweetState();
         }
-    })
+    });
 
     const unLikeMutation = trpc.likes.unLike.useMutation({
-        onSuccess: data => {
-            setIsliked(false);
+        onSuccess: async data => {
+            console.log('unlike', data);
+            setIsLiked(false);
+            await changeTweetState();
         }
-    })
+    });
 
     useEffect(() => {
-        if (!token) {
-            toast("Please login before continuing");
-            return;
-        }
-        const checkIfLike = async () => {
-            await checkIfLikeMutation.mutate({
+        const getLikeData = async () => {
+            await checkLikeMutation.mutate({
                 tweetId: id,
                 userEmail: token
             })
         }
-        checkIfLike();
-    }, [isLiked])
+        getLikeData();
+    }, [id, token])
 
     return (
         <div style={{
@@ -129,18 +132,19 @@ export const Card: React.FC<props> = ({
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {retweet} </Typography>
                 </div>
                 <div style={{display: 'flex'}} >
-                    <div onClick={() => {
+                    <div onClick={async () => {
                         if (!token) {
                             createToast("Please login before continuing");
                             return;
                         }
-                        !isLiked ? 
-                            onLikeMutation.mutate({
+                        console.log(id);
+                        isLiked ? 
+                            await unLikeMutation.mutate({
                                 tweetId: id,
                                 userEmail: token
                             })
                             :
-                            unLikeMutation.mutate({
+                            await likeMutation.mutate({
                                 tweetId: id,
                                 userEmail: token
                             })

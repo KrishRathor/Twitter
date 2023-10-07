@@ -1,23 +1,24 @@
+import { PrismaClient } from "@prisma/client";
 import { publicProcedure, router } from "../trpc";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export const likeRouter = router({
 
-    onLike: publicProcedure
+    like: publicProcedure
         .input(z.object({
             tweetId: z.string(),
-            userEmail: z.string()
+            userEmail: z.string().nullable(),
         }))
         .mutation(async opts => {
             const { tweetId, userEmail } = opts.input;
             if (!userEmail) {
                 return {
                     code: 403,
-                    message: 'token not found',
-                    like: ''
+                    message: 'user token not found',
+                    like: '',
+                    incrementLikeInTweet: ''
                 }
             }
             const user = await prisma.user.findFirst({
@@ -25,16 +26,15 @@ export const likeRouter = router({
                     email: userEmail
                 }
             })
-
             if (!user) {
                 return {
                     code: 403,
-                    message: 'User not found',
-                    like: ''
+                    message: 'user not found',
+                    like: '',
+                    incrementLikeInTweet: ''
                 }
             }
-
-            const addLike = await prisma.likes.create({
+            const like = await prisma.likes.create({
                 data: {
                     tweetId: tweetId,
                     userId: user.id
@@ -52,12 +52,13 @@ export const likeRouter = router({
             })
             return {
                 code: 201,
-                message: 'successfully likes tweet',
-                like: addLike
+                message: 'like tweet successfully',
+                like,
+                incrementLikeInTweet
             }
         }),
 
-    ifLike: publicProcedure
+    unLike: publicProcedure
         .input(z.object({
             tweetId: z.string(),
             userEmail: z.string().nullable()
@@ -67,62 +68,9 @@ export const likeRouter = router({
             if (!userEmail) {
                 return {
                     code: 403,
-                    message: 'token not found',
-                    status: false,
-                    like: ''
-                }
-            }
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userEmail
-                }
-            })
-
-            if (!user) {
-                return {
-                    code: 403,
-                    message: 'User not found',
-                    status: false,
-                    like: ''
-                }
-            }
-
-            const like = await prisma.likes.findFirst({
-                where: {
-                    tweetId: tweetId,
-                    userId: user.id
-                }
-            })
-
-            if (!like) {
-                return {
-                    code: 403,
-                    message: 'User found but he has not liked tweet',
-                    status: false,
-                    like: like
-                }
-            }
-
-            return {
-                code: 200,
-                message: 'User has liked tweet',
-                status: true,
-                like: like
-            }
-
-        }),
-
-    unLike: publicProcedure
-        .input(z.object({
-            tweetId: z.string(),
-            userEmail: z.string(),
-        }))
-        .mutation(async opts => {
-            const { tweetId, userEmail } = opts.input;
-            if (!userEmail) {
-                return {
-                    code: 403,
-                    message: 'token not found'
+                    message: 'user token not found',
+                    unlike: '',
+                    decrementLikeInTweet: ''
                 }
             }
             const user = await prisma.user.findFirst({
@@ -133,16 +81,18 @@ export const likeRouter = router({
             if (!user) {
                 return {
                     code: 403,
-                    message: 'user not found'
+                    message: 'user not found',
+                    unlike: '',
+                    decrementLikeInTweet: ''
                 }
             }
-            const like = await prisma.likes.deleteMany({
+            const unlike = await prisma.likes.deleteMany({
                 where: {
                     tweetId: tweetId,
                     userId: user.id
                 }
             })
-            const decrementLikesInTweet = await prisma.tweet.update({
+            const decrementLikeInTweet = await prisma.tweet.update({
                 where: {
                     id: tweetId
                 },
@@ -154,9 +104,57 @@ export const likeRouter = router({
             })
             return {
                 code: 201,
-                message: 'unliked successfully'
+                message: 'unliked tweet successfully',
+                unlike,
+                decrementLikeInTweet
             }
+        }),
 
+    ifLike: publicProcedure
+        .input(z.object({
+            tweetId: z.string(),
+            userEmail: z.string().nullable()
+        }))
+        .mutation(async opts => {
+            const { userEmail, tweetId } = opts.input;
+            if (!userEmail) {
+                return {
+                    code: 403,
+                    message: 'user token not found',
+                    status: false
+                }
+            }
+            const user = await prisma.user.findFirst({
+                where: {
+                    email: userEmail
+                }
+            })
+            if (!user) {
+                return {
+                    code: 403,
+                    message: 'user not found',
+                    status: false
+                }
+            }
+            const ifLike = await prisma.likes.findFirst({
+                where: {
+                    AND: [{userId: user.id}, {tweetId: tweetId}]
+                }
+            })
+            if (ifLike) {
+                return {
+                    code: 200,
+                    message: 'data fetched successfully',
+                    ifLike,
+                    status: true
+                }
+            }
+            return {
+                code: 200,
+                message: 'data fetched successfully',
+                ifLike,
+                status: false
+            }
         })
 
 })

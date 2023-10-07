@@ -1,7 +1,7 @@
 "use client"
 import { handleCommentPost } from "@/helpers/handleCommentPost";
 import { trpc } from "@/utils/trpc";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { Card, CreateTweetModal } from "ui"; 
 
@@ -10,17 +10,21 @@ let repliesMutation;
 export default function Home() {
 
   const [CreateTweetModalDisplay, setCreateTweetModalDisplay] = useState(false);
-  const [user, setUser] = useState('');
+  const [rerunTweetQuery, setRerunTweetQuery] = useState(false);
+  const [user, setUser] = useState();
   const [tweets, setTweets] = useState<any[]>([]);
 
   const userMuation = trpc.user.me.useMutation({
     onSuccess: data => {
-      setUser(JSON.stringify(data.user))
+      // @ts-ignore
+      setUser(JSON.stringify(data.user));
     }
   });
   const tweetsQuery = trpc.tweet.getAllTweets.useMutation({
     onSuccess: data => {
-      setTweets(data.tweets)
+      console.log(data.tweets);
+      const sortedTweets = data.tweets.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      setTweets(sortedTweets);
     }
   });
   const createPostMutation = trpc.replies.postReply.useMutation({
@@ -42,9 +46,19 @@ export default function Home() {
     }
   })
 
+  const changeTweetState = async () => {
+    console.log('state changed');
+    await tweetsQuery.mutate();
+    await setRerunTweetQuery(!rerunTweetQuery);
+  }
+
   useEffect(() => {
-    tweetsQuery.mutate();
-  }, [tweets])
+    console.log('first');
+    const fetchTweets = async () => {
+      await tweetsQuery.mutate();
+    }
+    fetchTweets();
+  }, [CreateTweetModalDisplay, rerunTweetQuery]);
   
   useEffect(() => {
     // here we are loading user information so that we can pass it in Card modal
@@ -107,15 +121,15 @@ export default function Home() {
               }}
               token={localStorage.getItem('token')}
               createToast={createToast}
+              changeTweetState={changeTweetState}
             />
         ))
         }
       </div>
        {
-        user ? 
         <CreateTweetModal 
-          username={JSON.parse(user).username}
-          email={JSON.parse(user).email}
+          username={ user && JSON.parse(user) ? JSON.parse(user).username : ''}
+          email={user && JSON.parse(user) ? JSON.parse(user).email : ''}
           toShow={CreateTweetModalDisplay}
           handleClose={() => {
             setCreateTweetModalDisplay(false);
@@ -123,7 +137,7 @@ export default function Home() {
           handleSubmit={async (data) => {
             createTweet.mutate(data);
           }}
-        /> : ''
+        />
        }
        <button onClick={() => {
           setCreateTweetModalDisplay(true);
