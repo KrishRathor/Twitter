@@ -1,9 +1,9 @@
 "use client"
-import { handleCommentPost } from "@/helpers/handleCommentPost";
 import { trpc } from "@/utils/trpc";
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Card, CreateTweetModal } from "ui"; 
+import { Card, CreateTweetModal } from "ui";
+import { useRouter } from "next/router";
 
 let repliesMutation;
 
@@ -13,6 +13,7 @@ export default function Home() {
   const [rerunTweetQuery, setRerunTweetQuery] = useState(false);
   const [user, setUser] = useState();
   const [tweets, setTweets] = useState<any[]>([]);
+  const router = useRouter();  
 
   const userMuation = trpc.user.me.useMutation({
     onSuccess: data => {
@@ -22,7 +23,6 @@ export default function Home() {
   });
   const tweetsQuery = trpc.tweet.getAllTweets.useMutation({
     onSuccess: data => {
-      console.log(data.tweets);
       const sortedTweets = data.tweets.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
       setTweets(sortedTweets);
     }
@@ -41,19 +41,17 @@ export default function Home() {
       if (data.code === 403) {
         toast("An internal error occured");
       } else if (data.code === 200) {
-        console.log(data.replies);
+        // do something
       } 
     }
   })
 
   const changeTweetState = async () => {
-    console.log('state changed');
     await tweetsQuery.mutate();
     await setRerunTweetQuery(!rerunTweetQuery);
   }
 
   useEffect(() => {
-    console.log('first');
     const fetchTweets = async () => {
       await tweetsQuery.mutate();
     }
@@ -86,6 +84,10 @@ export default function Home() {
 
   const createToast = (content: string) => {
     toast("Please login before continuing");
+  }
+
+  const push = (url: string) => {
+    router.push(url);
   }
 
   return (
@@ -122,6 +124,8 @@ export default function Home() {
               token={localStorage.getItem('token')}
               createToast={createToast}
               changeTweetState={changeTweetState}
+              isReTweet={item.isReTweet}
+              push={push}
             />
         ))
         }

@@ -54,6 +54,26 @@ export const tweetRouter = router({
                 message: "Tweet created successfully",
                 data: createTweet
             }
+        }),
+    
+    getTweetById: publicProcedure
+        .input(z.object({
+            id: z.string()
+        }))
+        .mutation(async opts => {
+            const { id } = opts.input;
+            console.log(id);
+            const tweet = await prisma.tweet.findFirst({
+                where: {
+                    id: id
+                }
+            })
+            console.log(tweet);
+            return {
+                code: 200,
+                message: 'Found tweet',
+                tweet: tweet
+            }
         })
 
 })

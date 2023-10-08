@@ -17,6 +17,7 @@ model User {
     createdAt DateTime @default(now())
     tweets Tweet[] @relation("userTweets")
     reTweets ReTweets[] @relation("userReTweets")
+    fromReTweets ReTweets[] @relation("fromUserReTweets")
     replies Replies[] @relation("userReplies")
     likes Likes[] @relation("userLikes")
 }
@@ -35,14 +36,19 @@ model Tweet {
   reTweetCount Int @default(0)
   RepliesCount Int @default(0)
   Likes Int @default(0)
+  isReTweet Boolean @default(false)
 }
 
 model ReTweets {
   id String @id @default(uuid())
   tweetID String
   tweet Tweet @relation("reTweet", fields: [tweetID], references: [id])
+  // this is user who is doing retweet
   userId String
   user User @relation("userReTweets", fields: [userId], references: [id])
+  // this is user from where tweet is made
+  fromUserId String
+  fromUser User @relation("fromUserReTweets", fields: [fromUserId], references: [id])
   createdAt DateTime @default(now())
 }
 

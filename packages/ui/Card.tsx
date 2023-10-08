@@ -6,7 +6,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareIcon from '@mui/icons-material/Share';
 import { Replies } from "./Replies";
 import { trpc } from "../../apps/web/src/utils/trpc";
-import toast from "react-hot-toast";
 
 interface props {
     avatarPic: string,
@@ -21,7 +20,9 @@ interface props {
     id: string,
     token: string | null,
     createToast: (arg0: string) => void,
-    changeTweetState: () => void
+    changeTweetState: () => void,
+    isReTweet: boolean,
+    push: (id: string) => void
 };
 
 export const Card: React.FC<props> = ({
@@ -37,22 +38,24 @@ export const Card: React.FC<props> = ({
     id,
     token,
     createToast,
-    changeTweetState
+    changeTweetState,
+    isReTweet,
+    push
 }: props) => {
 
     const [isVisible, setIsVisible] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
+    const [fromUserEmail, setFromUserEmail] = useState<string>();
+    const [isLoading, setIsLoading] = useState(true);
 
     const checkLikeMutation = trpc.likes.ifLike.useMutation({
         onSuccess: data => {
-            console.log('checklike', data);
             setIsLiked(data.status);
         }
     });
 
     const likeMutation = trpc.likes.like.useMutation({
         onSuccess: async data => {
-            console.log('like', data);
             setIsLiked(true);
             await changeTweetState();
         }
@@ -60,7 +63,6 @@ export const Card: React.FC<props> = ({
 
     const unLikeMutation = trpc.likes.unLike.useMutation({
         onSuccess: async data => {
-            console.log('unlike', data);
             setIsLiked(false);
             await changeTweetState();
         }
@@ -75,6 +77,33 @@ export const Card: React.FC<props> = ({
         }
         getLikeData();
     }, [id, token])
+
+    const reTweetMutation = trpc.reTweet.reTweet.useMutation({
+        onSuccess: async data => {
+            console.log(data)
+            await changeTweetState();
+        }
+    })
+
+    const getFromUser = trpc.reTweet.getFromUser.useMutation({
+        onSuccess: data => {
+            console.log(data);
+            setFromUserEmail(data.fromUserEmail);
+        }
+    })
+
+    useEffect(() => {
+        const getUser = async () => {
+            await getFromUser.mutate({
+                tweetId: id,
+                userEmail: token
+            })
+        }
+        getUser();
+        setIsLoading(false);
+    }, [])
+
+    if (isLoading) return <>Loading...</>;
 
     return (
         <div style={{
@@ -98,7 +127,22 @@ export const Card: React.FC<props> = ({
                     <Typography variant="subtitle1" sx={{marginLeft :'20px', color: 'gray'}} > {time} </Typography>
                 </div>
             </div>
-            <div style={{marginLeft: '20px', marginRight: '20px', marginTop: '10px'}}>
+
+            {
+                isReTweet ? 
+                    <div 
+                        style={{
+                            marginLeft: '5vw'  
+                        }} 
+                    >
+                        <Typography variant="subtitle2" sx={{color: 'gray'}} > retweeted from {fromUserEmail} </Typography>
+                    </div>
+                : ''
+            }
+            
+            <div style={{marginLeft: '20px', marginRight: '20px', marginTop: '10px', cursor: 'pointer'}} onClick={() => {
+                push(`tweet/${id}`);  
+            }} >
                 <Typography variant="h6"> {content} </Typography>
             </div>
             <div style={{
@@ -126,7 +170,17 @@ export const Card: React.FC<props> = ({
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {replyCount} </Typography>
                 </div>
                 <div style={{display: 'flex'}} >
-                    <div>
+                    <div onClick={async () => {
+                        console.log('clicked retweet');
+                        if (!token) {
+                            createToast("Please login before continuing");
+                        }
+                        await reTweetMutation.mutate({
+                            tweetId: id,
+                            userEmail: token,
+                            fromUserEmail: email
+                        })
+                    }} >
                         <DynamicFeedIcon sx={{cursor: 'pointer'}} />
                     </div>
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {retweet} </Typography>
@@ -137,7 +191,6 @@ export const Card: React.FC<props> = ({
                             createToast("Please login before continuing");
                             return;
                         }
-                        console.log(id);
                         isLiked ? 
                             await unLikeMutation.mutate({
                                 tweetId: id,

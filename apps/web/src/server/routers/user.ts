@@ -97,7 +97,6 @@ export const userRouter = router({
     getAllUsers: publicProcedure
         .query(async opts => {
             const users = await prisma.user.findMany();
-            console.log( "server side", users);
             return {
                 code: '100',
                 users
