@@ -8,10 +8,23 @@ export const tweetRouter = router({
 
     getAllTweets: publicProcedure
         .mutation(async opts => {
-            const tweets = await prisma.tweet.findMany();
-            return {
-                code: 200,
-                tweets
+            try {
+                const tweets = await prisma.tweet.findMany();
+                if (!tweets) {
+                    return {
+                        code: 200,
+                        tweets: []
+                    }
+                }
+                return {
+                    code: 200,
+                    tweets
+                }
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
         
@@ -21,38 +34,45 @@ export const tweetRouter = router({
             content: z.string()
         }))
         .mutation(async opts => {
-            const { userId, content } = opts.input;
+            try {
+                const { userId, content } = opts.input;
 
-            if (!userId) {
-                return {
-                    code: 403,
-                    message: "Please login before posting"
+                if (!userId) {
+                    return {
+                        code: 403,
+                        message: "Please login before posting"
+                    }
                 }
-            }
 
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userId
+                const user = await prisma.user.findFirst({
+                    where: {
+                        email: userId
+                    }
+                })
+                if (!user) {
+                    return {
+                        code: 403,
+                        message: "User not found"
+                    }
                 }
-            })
-            if (!user) {
+                const createTweet = await prisma.tweet.create({
+                    data: {
+                        content: content,
+                        userId: user?.id,
+                        email: userId,
+                        username: user.username
+                    }
+                })
                 return {
-                    code: 403,
-                    message: "User not found"
+                    code: 201,
+                    message: "Tweet created successfully",
+                    data: createTweet
                 }
-            }
-            const createTweet = await prisma.tweet.create({
-                data: {
-                    content: content,
-                    userId: user?.id,
-                    email: userId,
-                    username: user.username
-                }
-            })
-            return {
-                code: 201,
-                message: "Tweet created successfully",
-                data: createTweet
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
     
@@ -61,18 +81,25 @@ export const tweetRouter = router({
             id: z.string()
         }))
         .mutation(async opts => {
-            const { id } = opts.input;
-            console.log(id);
-            const tweet = await prisma.tweet.findFirst({
-                where: {
-                    id: id
+            try {
+                const { id } = opts.input;
+                console.log(id);
+                const tweet = await prisma.tweet.findFirst({
+                    where: {
+                        id: id
+                    }
+                })
+                console.log(tweet);
+                return {
+                    code: 200,
+                    message: 'Found tweet',
+                    tweet: tweet
                 }
-            })
-            console.log(tweet);
-            return {
-                code: 200,
-                message: 'Found tweet',
-                tweet: tweet
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         })
 

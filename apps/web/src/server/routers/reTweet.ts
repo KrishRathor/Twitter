@@ -13,69 +13,76 @@ export const reTweetRouter = router({
             tweetId: z.string()
         }))
         .mutation(async opts => {
-            const { userEmail, fromUserEmail, tweetId } = opts.input;
-            if (!userEmail) {
-                return {
-                    code: 403,
-                    message: 'user token not found'
-                }
-            }
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userEmail
-                }
-            })
-            const fromUser = await prisma.user.findFirst({
-                where: {
-                    email: fromUserEmail
-                }
-            })
-            if (!user || !fromUser) {
-                return {
-                    code: 403,
-                    message: 'user not found'
-                }
-            }
-            const createRetweet = await prisma.reTweets.create({
-                data: {
-                    userId: user.id,
-                    fromUserId: fromUser.id,
-                    tweetID: tweetId
-                }
-            })
-            const tweet = await prisma.tweet.findFirst({
-                where: {
-                    id: tweetId,
-                }
-            })
-            const incrementRetweetInTweet = await prisma.tweet.update({
-                where: {
-                    id: tweetId
-                },
-                data: {
-                    reTweetCount: {
-                        increment: 1
+            try {
+                const { userEmail, fromUserEmail, tweetId } = opts.input;
+                if (!userEmail) {
+                    return {
+                        code: 403,
+                        message: 'user token not found'
                     }
                 }
-            })
-            if (!tweet) {
+                const user = await prisma.user.findFirst({
+                    where: {
+                        email: userEmail
+                    }
+                })
+                const fromUser = await prisma.user.findFirst({
+                    where: {
+                        email: fromUserEmail
+                    }
+                })
+                if (!user || !fromUser) {
+                    return {
+                        code: 403,
+                        message: 'user not found'
+                    }
+                }
+                const createRetweet = await prisma.reTweets.create({
+                    data: {
+                        userId: user.id,
+                        fromUserId: fromUser.id,
+                        tweetID: tweetId
+                    }
+                })
+                const tweet = await prisma.tweet.findFirst({
+                    where: {
+                        id: tweetId,
+                    }
+                })
+                const incrementRetweetInTweet = await prisma.tweet.update({
+                    where: {
+                        id: tweetId
+                    },
+                    data: {
+                        reTweetCount: {
+                            increment: 1
+                        }
+                    }
+                })
+                if (!tweet) {
+                    return {
+                        code: 403,
+                        message: 'code not found'
+                    }
+                }
+                const createTweet = await prisma.tweet.create({
+                    data: {
+                        content: tweet.content,
+                        userId: user.id,
+                        username: user.username,
+                        email: user.email,
+                        isReTweet: true
+                    }
+                })
                 return {
-                    code: 403,
-                    message: 'code not found'
+                    code: 201,
+                    message: 'retweeted successfully'
                 }
-            }
-            const createTweet = await prisma.tweet.create({
-                data: {
-                    content: tweet.content,
-                    userId: user.id,
-                    username: user.username,
-                    email: user.email,
-                    isReTweet: true
-                }
-            })
-            return {
-                code: 201,
-                message: 'retweeted successfully'
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
 
@@ -85,48 +92,55 @@ export const reTweetRouter = router({
             userEmail: z.string().nullable()
         }))
         .mutation(async opts => {
-            const { tweetId, userEmail } = opts.input;
-            if (!userEmail) {
+            try {
+                const { tweetId, userEmail } = opts.input;
+                if (!userEmail) {
+                    return {
+                        code: 403,
+                        message: 'user token not found',
+                        fromUserEmail: ''
+                    }
+                }
+                const user = await prisma.user.findFirst({
+                    where: {
+                        email: userEmail
+                    }
+                })
+                if (!user) {
+                    return {
+                        code: 403,
+                        message: 'user not found',
+                        fromUserEmail: ''
+                    }
+                }
+                const findReTweet = await prisma.reTweets.findFirst({
+                    where: {
+                        AND: [{tweetID: tweetId}, {userId: user.id}]
+                    }
+                })
+                const fromUserId = findReTweet?.fromUserId;
+                const fromUser = await prisma.user.findFirst({
+                    where: {
+                        id: fromUserId
+                    }
+                })
+                if (!fromUser) {
+                    return {
+                        code: 403,
+                        message: 'from user not found',
+                        fromUserEmail: ''
+                    }
+                }
                 return {
-                    code: 403,
-                    message: 'user token not found',
-                    fromUserEmail: ''
+                    code: 200,
+                    message: 'from user found',
+                    fromUserEmail: fromUser.email
                 }
-            }
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userEmail
-                }
-            })
-            if (!user) {
-                return {
-                    code: 403,
-                    message: 'user not found',
-                    fromUserEmail: ''
-                }
-            }
-            const findReTweet = await prisma.reTweets.findFirst({
-                where: {
-                    AND: [{tweetID: tweetId}, {userId: user.id}]
-                }
-            })
-            const fromUserId = findReTweet?.fromUserId;
-            const fromUser = await prisma.user.findFirst({
-                where: {
-                    id: fromUserId
-                }
-            })
-            if (!fromUser) {
-                return {
-                    code: 403,
-                    message: 'from user not found',
-                    fromUserEmail: ''
-                }
-            }
-            return {
-                code: 200,
-                message: 'from user found',
-                fromUserEmail: fromUser.email
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         })
 

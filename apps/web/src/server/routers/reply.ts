@@ -13,45 +13,52 @@ export const replyRouter = router({
             content: z.string()
         }))
         .mutation(async opts => {
-            const { tweetId, userId, content } = opts.input;
-            if (!userId) {
-                return {
-                    code: 403,
-                    message: 'Please login before continuing...'
-                }
-            }
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userId
-                }
-            })
-            if (!user) {
-                return {
-                    code: 403,
-                    message: 'User not Found'
-                }
-            }
-            const postReply = await prisma.replies.create({
-                data: {
-                    tweetId: tweetId,
-                    userId: user?.id,
-                    content: content
-                }
-            })
-            await prisma.tweet.update({
-                where: {
-                    id: tweetId,
-                },
-                data: {
-                    RepliesCount: {
-                        increment: 1
+            try {
+                const { tweetId, userId, content } = opts.input;
+                if (!userId) {
+                    return {
+                        code: 403,
+                        message: 'Please login before continuing...'
                     }
                 }
-            })
-            return {
-                code: 201,
-                message: 'Reply sent successfully',
-                postReply
+                const user = await prisma.user.findFirst({
+                    where: {
+                        email: userId
+                    }
+                })
+                if (!user) {
+                    return {
+                        code: 403,
+                        message: 'User not Found'
+                    }
+                }
+                const postReply = await prisma.replies.create({
+                    data: {
+                        tweetId: tweetId,
+                        userId: user?.id,
+                        content: content
+                    }
+                })
+                await prisma.tweet.update({
+                    where: {
+                        id: tweetId,
+                    },
+                    data: {
+                        RepliesCount: {
+                            increment: 1
+                        }
+                    }
+                })
+                return {
+                    code: 201,
+                    message: 'Reply sent successfully',
+                    postReply
+                }
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
 
@@ -60,23 +67,30 @@ export const replyRouter = router({
             tweetId: z.string().nullable()
         }))
         .mutation(async opts => {
-            const { tweetId } = opts.input;
-            if (!tweetId) {
+            try {
+                const { tweetId } = opts.input;
+                if (!tweetId) {
+                    return {
+                        code: 403,
+                        message: "Tweet Id not provided",
+                        replies: ''
+                    }
+                }
+                const comments = await prisma.replies.findMany({
+                    where: {
+                        tweetId: tweetId
+                    }
+                })
                 return {
-                    code: 403,
-                    message: "Tweet Id not provided",
-                    replies: ''
+                    code: 200,
+                    message: "Replies fetched successfully",
+                    replies: comments
                 }
-            }
-            const comments = await prisma.replies.findMany({
-                where: {
-                    tweetId: tweetId
-                }
-            })
-            return {
-                code: 200,
-                message: "Replies fetched successfully",
-                replies: comments
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         })
 

@@ -13,30 +13,37 @@ export const userRouter = router({
             password: z.string()
         }))
         .mutation(async opts => {
-            const {username, email, password} = opts.input;
+            try {
+                const {username, email, password} = opts.input;
 
-            const user = await prisma.user.findFirst({where: {
-                email: email
-            }});
+                const user = await prisma.user.findFirst({where: {
+                    email: email
+                }});
 
-            if (user) {
+                if (user) {
+                    return {
+                        code: 403,
+                        message: 'Email already registered!'
+                    }
+                }
+
+                const createUser = await prisma.user.create({
+                    data: {
+                        email: email,
+                        username: username,
+                        password: password
+                    }
+                });
                 return {
-                    code: 403,
-                    message: 'Email already registered!'
+                    code: 201,
+                    message: 'User created successfully',
+                    user: createUser
                 }
-            }
-
-            const createUser = await prisma.user.create({
-                data: {
-                    email: email,
-                    username: username,
-                    password: password
-                }
-            });
-            return {
-                code: 201,
-                message: 'User created successfully',
-                user: createUser
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
 
@@ -46,31 +53,38 @@ export const userRouter = router({
             password: z.string()
         }))
         .mutation(async opts => {
-            const { email, password } = opts.input;
+            try {
+                const { email, password } = opts.input;
 
-            const user = await prisma.user.findFirst({where: {
-                email: email
-            }});
+                const user = await prisma.user.findFirst({where: {
+                    email: email
+                }});
 
-            if (!user) {
-                return {
-                    code: 401,
-                    message: "User not Found!",
-                    token: '',
+                if (!user) {
+                    return {
+                        code: 401,
+                        message: "User not Found!",
+                        token: '',
+                    }
                 }
-            }
 
-            if (user.password !== password) {
-                return {
-                    code: 401,
-                    message: "Wrong password!",
-                    token: ''
+                if (user.password !== password) {
+                    return {
+                        code: 401,
+                        message: "Wrong password!",
+                        token: ''
+                    }
                 }
-            }
-            return {
-                code: 200,
-                message: "Successfull Login!",
-                token: email
+                return {
+                    code: 200,
+                    message: "Successfull Login!",
+                    token: email
+                }
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
 
@@ -79,28 +93,42 @@ export const userRouter = router({
             userID: z.string().nullable()
         }))
         .mutation(async opts => {
-            const { userID } = opts.input;
-            let user;
-            if (userID) {
-                user = await prisma.user.findFirst({
-                    where: {
-                        email: userID
-                    }
-                })
-            }
-            return {
-                code: 200,
-                user
+            try {
+                const { userID } = opts.input;
+                let user;
+                if (userID) {
+                    user = await prisma.user.findFirst({
+                        where: {
+                            email: userID
+                        }
+                    })
+                }
+                return {
+                    code: 200,
+                    user
+                }
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
 
     getAllUsers: publicProcedure
         .query(async opts => {
-            const users = await prisma.user.findMany();
-            return {
-                code: '100',
-                users
-            };
+            try {
+                const users = await prisma.user.findMany();
+                return {
+                    code: '100',
+                    users
+                };
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
+            }
         })
 
 })

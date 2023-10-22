@@ -1,6 +1,6 @@
 "use client"
 import { trpc } from "@/utils/trpc";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Card, CreateTweetModal } from "ui";
 import { useRouter } from "next/router";
@@ -23,8 +23,9 @@ export default function Home() {
   });
   const tweetsQuery = trpc.tweet.getAllTweets.useMutation({
     onSuccess: data => {
-      const sortedTweets = data.tweets.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-      setTweets(sortedTweets);
+      console.log("data", data.tweets);
+      const sortedArray = data.tweets.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      setTweets(sortedArray);
     }
   });
   const createPostMutation = trpc.replies.postReply.useMutation({
@@ -83,7 +84,7 @@ export default function Home() {
   });
 
   const createToast = (content: string) => {
-    toast("Please login before continuing");
+    toast(content);
   }
 
   const push = (url: string) => {

@@ -12,49 +12,56 @@ export const likeRouter = router({
             userEmail: z.string().nullable(),
         }))
         .mutation(async opts => {
-            const { tweetId, userEmail } = opts.input;
-            if (!userEmail) {
-                return {
-                    code: 403,
-                    message: 'user token not found',
-                    like: '',
-                    incrementLikeInTweet: ''
-                }
-            }
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userEmail
-                }
-            })
-            if (!user) {
-                return {
-                    code: 403,
-                    message: 'user not found',
-                    like: '',
-                    incrementLikeInTweet: ''
-                }
-            }
-            const like = await prisma.likes.create({
-                data: {
-                    tweetId: tweetId,
-                    userId: user.id
-                }
-            })
-            const incrementLikeInTweet = await prisma.tweet.update({
-                where: {
-                    id: tweetId
-                },
-                data: {
-                    Likes: {
-                        increment: 1
+            try {
+                const { tweetId, userEmail } = opts.input;
+                if (!userEmail) {
+                    return {
+                        code: 403,
+                        message: 'user token not found',
+                        like: '',
+                        incrementLikeInTweet: ''
                     }
                 }
-            })
-            return {
-                code: 201,
-                message: 'like tweet successfully',
-                like,
-                incrementLikeInTweet
+                const user = await prisma.user.findFirst({
+                    where: {
+                        email: userEmail
+                    }
+                })
+                if (!user) {
+                    return {
+                        code: 403,
+                        message: 'user not found',
+                        like: '',
+                        incrementLikeInTweet: ''
+                    }
+                }
+                const like = await prisma.likes.create({
+                    data: {
+                        tweetId: tweetId,
+                        userId: user.id
+                    }
+                })
+                const incrementLikeInTweet = await prisma.tweet.update({
+                    where: {
+                        id: tweetId
+                    },
+                    data: {
+                        Likes: {
+                            increment: 1
+                        }
+                    }
+                })
+                return {
+                    code: 201,
+                    message: 'like tweet successfully',
+                    like,
+                    incrementLikeInTweet
+                }
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
 
@@ -64,49 +71,56 @@ export const likeRouter = router({
             userEmail: z.string().nullable()
         }))
         .mutation(async opts => {
-            const { tweetId, userEmail } = opts.input;
-            if (!userEmail) {
-                return {
-                    code: 403,
-                    message: 'user token not found',
-                    unlike: '',
-                    decrementLikeInTweet: ''
-                }
-            }
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userEmail
-                }
-            })
-            if (!user) {
-                return {
-                    code: 403,
-                    message: 'user not found',
-                    unlike: '',
-                    decrementLikeInTweet: ''
-                }
-            }
-            const unlike = await prisma.likes.deleteMany({
-                where: {
-                    tweetId: tweetId,
-                    userId: user.id
-                }
-            })
-            const decrementLikeInTweet = await prisma.tweet.update({
-                where: {
-                    id: tweetId
-                },
-                data: {
-                    Likes: {
-                        decrement: 1
+            try {
+                const { tweetId, userEmail } = opts.input;
+                if (!userEmail) {
+                    return {
+                        code: 403,
+                        message: 'user token not found',
+                        unlike: '',
+                        decrementLikeInTweet: ''
                     }
                 }
-            })
-            return {
-                code: 201,
-                message: 'unliked tweet successfully',
-                unlike,
-                decrementLikeInTweet
+                const user = await prisma.user.findFirst({
+                    where: {
+                        email: userEmail
+                    }
+                })
+                if (!user) {
+                    return {
+                        code: 403,
+                        message: 'user not found',
+                        unlike: '',
+                        decrementLikeInTweet: ''
+                    }
+                }
+                const unlike = await prisma.likes.deleteMany({
+                    where: {
+                        tweetId: tweetId,
+                        userId: user.id
+                    }
+                })
+                const decrementLikeInTweet = await prisma.tweet.update({
+                    where: {
+                        id: tweetId
+                    },
+                    data: {
+                        Likes: {
+                            decrement: 1
+                        }
+                    }
+                })
+                return {
+                    code: 201,
+                    message: 'unliked tweet successfully',
+                    unlike,
+                    decrementLikeInTweet
+                }
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         }),
 
@@ -116,44 +130,51 @@ export const likeRouter = router({
             userEmail: z.string().nullable()
         }))
         .mutation(async opts => {
-            const { userEmail, tweetId } = opts.input;
-            if (!userEmail) {
-                return {
-                    code: 403,
-                    message: 'user token not found',
-                    status: false
+            try {
+                const { userEmail, tweetId } = opts.input;
+                if (!userEmail) {
+                    return {
+                        code: 403,
+                        message: 'user token not found',
+                        status: false
+                    }
                 }
-            }
-            const user = await prisma.user.findFirst({
-                where: {
-                    email: userEmail
+                const user = await prisma.user.findFirst({
+                    where: {
+                        email: userEmail
+                    }
+                })
+                if (!user) {
+                    return {
+                        code: 403,
+                        message: 'user not found',
+                        status: false
+                    }
                 }
-            })
-            if (!user) {
-                return {
-                    code: 403,
-                    message: 'user not found',
-                    status: false
+                const ifLike = await prisma.likes.findFirst({
+                    where: {
+                        AND: [{userId: user.id}, {tweetId: tweetId}]
+                    }
+                })
+                if (ifLike) {
+                    return {
+                        code: 200,
+                        message: 'data fetched successfully',
+                        ifLike,
+                        status: true
+                    }
                 }
-            }
-            const ifLike = await prisma.likes.findFirst({
-                where: {
-                    AND: [{userId: user.id}, {tweetId: tweetId}]
-                }
-            })
-            if (ifLike) {
                 return {
                     code: 200,
                     message: 'data fetched successfully',
                     ifLike,
-                    status: true
+                    status: false
                 }
-            }
-            return {
-                code: 200,
-                message: 'data fetched successfully',
-                ifLike,
-                status: false
+            } catch (error) {
+                console.log(error);
+                throw new Error();
+            } finally {
+                await prisma.$disconnect();
             }
         })
 

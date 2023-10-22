@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Typography } from '@mui/material';
+import { Avatar, Typography, Box } from '@mui/material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareIcon from '@mui/icons-material/Share';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Replies } from "./Replies";
 import { trpc } from "../../apps/web/src/utils/trpc";
 
@@ -47,6 +48,8 @@ export const Card: React.FC<props> = ({
     const [isLiked, setIsLiked] = useState(false);
     const [fromUserEmail, setFromUserEmail] = useState<string>();
     const [isLoading, setIsLoading] = useState(true);
+    const [display, setDisplay] = useState<boolean>(false);
+    const [shareLink, setShareLink] = useState('');
 
     const checkLikeMutation = trpc.likes.ifLike.useMutation({
         onSuccess: data => {
@@ -102,6 +105,13 @@ export const Card: React.FC<props> = ({
         getUser();
         setIsLoading(false);
     }, [])
+
+    const handleShare = (id: string) => {
+        const urlToShare = `http://localhost:3000/tweet/${id}`;
+        console.log(urlToShare);
+        setShareLink(urlToShare);
+        setDisplay(!display);
+    }
 
     if (isLoading) return <>Loading...</>;
 
@@ -207,8 +217,33 @@ export const Card: React.FC<props> = ({
                     <Typography variant="subtitle1" sx={{color: 'gray', marginLeft: '3px'}}> {likes} </Typography>
                 </div>
                 <div>
-                    <ShareIcon sx={{cursor: 'pointer'}} />
+                    <ShareIcon sx={{cursor: 'pointer'}} onClick={() => handleShare(id)} />
                 </div>
+            </div>
+            <div style={{
+                position: 'relative',
+                display: display ? 'block' : 'none',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: 'gray',
+                width: '90%',
+                margin: 'auto',
+                padding: '2px',
+                borderRadius: '5px'
+            }} >
+                <Box sx={{
+                    display: 'flex'
+                }} >
+                    <Typography variant="subtitle1">{shareLink}</Typography>
+                    <div style={{
+                        cursor: 'pointer'
+                    }} onClick={async () => {
+                        await navigator.clipboard.writeText(shareLink);
+                        createToast("Link copied successfully!")
+                    }} >
+                        <ContentCopyIcon />
+                    </div>
+                </Box>
             </div>
         </div>
     )
